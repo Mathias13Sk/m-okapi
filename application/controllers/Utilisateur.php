@@ -15,24 +15,51 @@ class Utilisateur extends CI_Controller
 
     public function nouvel_utilisateur()
     {
-        $nomcomplet = $this->input->post('nomcomplet');
-        $email = $this->input->post('email');
-        $login = $this->input->post('login');
-        $mdp = $this->input->post('mdp');
-        $mdpconf = $this->input->post('mdpconf');
+        $this->form_validation->set_rules('nomcomplet','nom complet','required',array(
+            'required'=>'* veuillez fournir le %s'));
+        $this->form_validation->set_rules('email','e-mail','required|valid_email',array(
+            'required'=>'* veuillez fournir le %s',
+            'valid_email'=>'* veuillez fournir un %s valide'));
+        $this->form_validation->set_rules(
+            'login','nom d\'utilisateur','required|is_unique[utilisateur.login]|min_length[4]|max_length[15]|alpha',array(
+            'required'=>'* veuillez fournir le %s',
+            'is_unique'=>'* %s déja utilisé',
+            'min_length'=>'* %s trop court',
+            'max_length'=>'* %s trop long',
+            'alpha'=>'* %s invalide'));
+        $this->form_validation->set_rules('mdp','mot de passe','required|min_length[8]',array(
+            'required'=>'* veuillez fournir un %s',
+            'min_length'=>'* %s trop court'));
+        $this->form_validation->set_rules('mdpconf','confirmation mot de passe','required|matches[mdp]',array(
+            'required'=>'* veuillez confirmer le mot de passe',
+            'matches'=>'* mots de passe non-identiques'));
 
-        $data = array(
-            'nomcomplet' => $nomcomplet,
-            'email' => $email,
-            'login' => $login,
-            'mdp' => $mdp,
-            'etat' => FALSE
-        );
+        if($this->form_validation->run() == TRUE)
+         {  
+            $nomcomplet = $this->input->post('nomcomplet');
+            $email = $this->input->post('email');
+            $login = $this->input->post('login');
+            $mdp = $this->input->post('mdp');
+            $mdpconf = $this->input->post('mdpconf');
 
-        $this->load->model('UtilisateurModel');
-        $this->UtilisateurModel->creer_utilisateur($data);
-    
-        $this->load->view('utilisateur/inscription_success');
+            $data = array(
+                'nomcomplet' => $nomcomplet,
+                'email' => $email,
+                'login' => $login,
+                'mdp' => $mdp,
+                'etat' => FALSE
+            );
+
+            $this->load->model('UtilisateurModel');
+            $this->UtilisateurModel->creer_utilisateur($data);
+        
+            $this->load->view('utilisateur/inscription_success');
+
+           }
+         else
+         {
+            $this->load->view('utilisateur/form_inscription');
+         }
     }
 
     public function connexion()
